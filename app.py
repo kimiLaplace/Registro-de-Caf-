@@ -16,7 +16,18 @@ st.title("📅 Registro do Café")
 
 # Formulário
 data = st.date_input("Selecione a data")
-horario = st.time_input("Selecione o horário")
+horario_input = st.text_input("Digite o horário (HH:MM ou HH:MM:SS)", value="08:00")
+
+try:
+    # Tenta converter para hora válida
+    horario = datetime.strptime(horario_input.strip(), "%H:%M:%S").time()
+except ValueError:
+    try:
+        horario = datetime.strptime(horario_input.strip(), "%H:%M").time()
+    except ValueError:
+        st.error("⛔ Horário inválido. Use o formato HH:MM ou HH:MM:SS.")
+        st.stop()
+
 flag = st.radio("Flag (Sim/Não)", ["Sim", "Não"])
 observacao = st.text_area("Observações")
 
