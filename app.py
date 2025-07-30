@@ -11,8 +11,6 @@ flag = st.radio("Flag", ["Sim", "Não"])
 obs = st.text_area("Observações")
 
 if st.button("Enviar"):
-    # URL correta para o envio de respostas do formulário
-    # Note que termina com "formResponse" em vez de "viewform"
     form_url = "https://docs.google.com/forms/d/e/1FAIpQLSeuSOidOlvY80Ae5ZcKgUjOP1XPxRPmtcdjVsTlZtRoij3MsA/formResponse"
 
     # Mapeamento corrigido dos entrys do formulário
