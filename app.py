@@ -1,49 +1,42 @@
 import streamlit as st
-import pandas as pd
+import requests
 from datetime import datetime
-import os
 
-# Nome do arquivo Excel
-excel_file = "registro_dados.xlsx"
+st.title("📋 Registro de Café")
 
-# Cria o arquivo Excel com cabeçalhos se ele não existir
-if not os.path.exists(excel_file):
-    df_init = pd.DataFrame(columns=["Data", "Horário", "Flag", "Observações", "Registrado em"])
-    df_init.to_excel(excel_file, index=False)
+# Coleta dos dados
+data = st.date_input("Data")
+hora = st.time_input("Horário")
+flag = st.radio("Flag", ["Sim", "Não"])
+obs = st.text_area("Observações")
 
-# Título da aplicação
-st.title("📅 Registro do Café")
+if st.button("Enviar"):
+    # URL correta para o envio de respostas do formulário
+    # Note que termina com "formResponse" em vez de "viewform"
+    form_url = "https://docs.google.com/forms/d/e/1FAIpQLSeuSOidOlvY80Ae5ZcKgUjOP1XPxRPmtcdjVsTlZtRoij3MsA/formResponse"
 
-# Formulário
-data = st.date_input("Selecione a data")
-horario_input = st.text_input("Digite o horário (HH:MM ou HH:MM:SS)", value="08:00")
+    # Mapeamento corrigido dos entrys do formulário
+    form_data = {
+        # Campos de data (ano, mês, dia)
+        "entry.1753921748_year": data.year,
+        "entry.1753921748_month": data.month,
+        "entry.1753921748_day": data.day,
 
-try:
-    # Tenta converter para hora válida
-    horario = datetime.strptime(horario_input.strip(), "%H:%M:%S").time()
-except ValueError:
-    try:
-        horario = datetime.strptime(horario_input.strip(), "%H:%M").time()
-    except ValueError:
-        st.error("⛔ Horário inválido. Use o formato HH:MM ou HH:MM:SS.")
-        st.stop()
+        # Campos de horário (hora, minuto)
+        "entry.1810654528_hour": hora.hour,
+        "entry.1810654528_minute": hora.minute,
 
-flag = st.radio("Flag (Sim/Não)", ["Sim", "Não"])
-observacao = st.text_area("Observações")
+        # Campo da Flag (Sim/Não)
+        "entry.451192745": flag,
 
-# Botão de envio
-if st.button("Registrar"):
-    novo_registro = pd.DataFrame([{
-        "Data": data.strftime("%Y-%m-%d"),
-        "Horário": horario.strftime("%H:%M:%S"),
-        "Flag": flag,
-        "Observações": observacao,
-        "Registrado em": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    }])
+        # Campo de Observações
+        "entry.2094178778": obs,
+    }
 
-    # Adiciona novo registro no Excel
-    df_existente = pd.read_excel(excel_file)
-    df_atualizado = pd.concat([df_existente, novo_registro], ignore_index=True)
-    df_atualizado.to_excel(excel_file, index=False)
+    response = requests.post(form_url, data=form_data)
 
-    st.success("✅ Registro salvo com sucesso!")
+    if response.status_code == 200:
+        st.success("✅ Registro enviado com sucesso!")
+    else:
+        st.warning(f"⚠️ Algo deu errado. Código de status: {response.status_code}")
+        st.info("Verifique a URL do formulário e o mapeamento dos campos 'entry'.")
